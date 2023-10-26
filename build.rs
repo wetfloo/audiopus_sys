@@ -46,8 +46,16 @@ fn build_opus(is_static: bool) {
             .expect("Could not canonicalise to absolute path")
     );
 
+    let mut dst = cmake::Config::new(opus_path);
+    
+    println!("cargo:rerun-if-env-changed=ANDROID_NDK");
+    if let Ok(ndk) = std::env::var("ANDROID_NDK") {
+        dst.define("CMAKE_SYSTEM_NAME", "Android");
+        dst.define("ANDROID_NDK", ndk);
+    }
+    
     println!("cargo:info=Building Opus via CMake.");
-    let opus_build_dir = cmake::build(opus_path);
+    let opus_build_dir = dst.build();    
     link_opus(is_static, opus_build_dir.display())
 }
 
