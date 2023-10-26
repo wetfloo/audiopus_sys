@@ -53,7 +53,17 @@ fn build_opus(is_static: bool) {
         dst.define("CMAKE_SYSTEM_NAME", "Android");
         dst.define("ANDROID_NDK", ndk);
     }
-    
+
+    println!("cargo:rerun-if-env-changed=CMAKE_TOOLCHAIN_FILE");
+    if let Ok(toolchain) = std::env::var("CMAKE_TOOLCHAIN_FILE") {
+        dst.define("CMAKE_TOOLCHAIN_FILE", toolchain);
+    }
+
+    println!("cargo:rerun-if-env-changed=ANDROID_ABI");
+    if let Ok(abi) = std::env::var("ANDROID_ABI") {
+        dst.define("ANDROID_ABI", abi);
+    }
+
     println!("cargo:info=Building Opus via CMake.");
     let opus_build_dir = dst.build();    
     link_opus(is_static, opus_build_dir.display())
